@@ -1,0 +1,23 @@
+*lrsnash:lrslib v.6.2 2016.3.28(64bit,lrsgmp.h gmp v.4.3)
+
+*Input linearity in row 3 is redundant--skipped2  0  1/2  1/2  0  1 
+1  1/4  1/4  1/4  1/4  3/4 
+
+2  0  1/2  1/2  0  1 
+2  0  0  1/2  1/2  1 
+1  2/5  0  1/5  2/5  4/5 
+
+2  0  0  1/2  1/2  1 
+1  1/2  0  0  1/2  1 
+
+2  1/2  1/2  0  0  1 
+2  1  0  0  0  1 
+2  1/2  0  1/2  0  1 
+2  0  1/2  1/2  0  1 
+1  0  0  0  1  1 
+
+*Number of equilibria found: 8
+*Player 1: vertices=12 bases=15 pivots=19
+*Player 2: vertices=8 bases=7 pivots=26
+
+*lrsnash:lrslib v.6.2 2016.3.28(64bit,lrsgmp.h)

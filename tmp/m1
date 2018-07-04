@@ -1,0 +1,11 @@
+*../bimatrix/games/game: player 1
+H-representation
+linearity 1 5
+begin
+5 4 rational
+0 1 0 0 
+0 0 1 0 
+0 0 0  1 
+0 -1 -1  1 
+-1 1 1 0 
+end
