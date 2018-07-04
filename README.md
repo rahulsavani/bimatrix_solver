@@ -20,6 +20,9 @@ An online web-based interface to this solver can be found at:
 
 http://cgi.csc.liv.ac.uk/~rahul/bimatrix_solver/
 
+Citation
+--------
+
 If this code is used in your research, please cite the following paper, where
 the underlying algorithms were first presented in full:
 
