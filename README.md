@@ -16,6 +16,15 @@ The enumeration happens in two parts:
 For a non-degenerate game, every equilibrium component is a singleton and 
 the components are exactly the extreme equilbiria.
 
+An online web-based interface to this solver can be found at:
+
+http://cgi.csc.liv.ac.uk/~rahul/bimatrix_solver/
+
+If this code is used in your research, please cite the following paper, where
+the underlying algorithms were first presented in full:
+
+D. Avis, G. Rosenberg, R. Savani , and B. von Stengel (2010), Enumeration of Nash Equilibria for Two-Player Games. Economic Theory 42, 9-37. Online solver available at http://banach.lse.ac.uk.
+
 Installation
 ------------
 
