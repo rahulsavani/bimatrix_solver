@@ -1,3 +1,6 @@
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import os 
 from fractions import Fraction
 import string 
@@ -13,8 +16,8 @@ def pretty_print (my_matrix):
     max_lens = [max([len(str(r[i])) for r in my_matrix])
                             for i in range(len(my_matrix[0]))]
 
-    print "\n".join(["".join([string.rjust(str(e), l + 2)
-                        for e, l in zip(r, max_lens)]) for r in my_matrix])
+    print("\n".join(["".join([str(e).rjust(l + 2)
+                        for e, l in zip(r, max_lens)]) for r in my_matrix]))
 
 
 def process_lrs_output(fpath = 'tmp/out'):
@@ -83,7 +86,7 @@ def process_lrs_output(fpath = 'tmp/out'):
         elif x[j][0] == "1": 
             processII = False
         else:
-            print "processII not set, x[j][0]", x[j][0]
+            print("processII not set, x[j][0]", x[j][0])
 
         l = len(x[j])
         ##########################################
@@ -192,19 +195,19 @@ def clique_enumeration(numberOfEq, index1, index2):
 
 def print_output(nrow, ncol, m1, m2, dec, rat, clique_output):
 
-    print "%d x %d payoff matrix A:\n" % (nrow, ncol)
+    print("%d x %d payoff matrix A:\n" % (nrow, ncol))
     pretty_print(m1)
-    print
-    print "%d x %d payoff matrix B:\n" % (nrow, ncol)
+    print()
+    print("%d x %d payoff matrix B:\n" % (nrow, ncol))
     pretty_print(m2)
-    print
-    print "EE = Extreme Equilibrium, EP = Expected Payoff\n"
-    print "Decimal Output\n"
+    print()
+    print("EE = Extreme Equilibrium, EP = Expected Payoff\n")
+    print("Decimal Output\n")
     pretty_print(dec)
-    print
-    print "Rational Output\n"
+    print()
+    print("Rational Output\n")
     pretty_print(rat)
-    print clique_output
+    print(clique_output)
 
 def parse_input_game(fpath):
     """
