@@ -5,6 +5,9 @@ import os
 from fractions import Fraction
 import string 
 import argparse 
+import subprocess
+import StringIO
+import yaml
 
 def pretty_print (my_matrix):
     """
@@ -20,24 +23,39 @@ def pretty_print (my_matrix):
                         for e, l in zip(r, max_lens)]) for r in my_matrix]))
 
 
-def process_lrs_output(fpath = 'tmp/out'):
+
+def process_lrs_output(string_input = None, fpath = 'tmp/out'):
     """
     create:
         - text output of equilibria in decimal and fractional format
         - input for clique_enumeration
     """
 
-    f= open(fpath, 'r')
+    global store
+    store = {}
+
+    if string_input is not None:
+        # string_input takes precedence
+        buf = StringIO.StringIO(string_input)
+    else: 
+        # read from fpath
+        buf = open(fpath, 'r')
+
+    # x is an dictionary with integer line numbers as keys (so indexing from 1)
     x, i = {}, 1
-    for line in f.readlines():
+    for line in buf.readlines():
         x[i] = line.split()
         i+=1
+
+    buf.close()
 
     ######################################################
     # Number of extreme equilibria
     ######################################################
     # changed with use of lrsnash to i-5
     numberOfEq = int(x[i-5][4])
+
+    store['number_of_extreme_eq'] = numberOfEq
 
     # store mixed strategies as arrays of string probabilities 
     e1, e2 = {}, {}
@@ -86,7 +104,8 @@ def process_lrs_output(fpath = 'tmp/out'):
         elif x[j][0] == "1": 
             processII = False
         else:
-            print("processII not set, x[j][0]", x[j][0])
+            print("skipping line: %s", x[j])
+            continue
 
         l = len(x[j])
         ##########################################
@@ -175,9 +194,15 @@ def process_lrs_output(fpath = 'tmp/out'):
         rat[i].append(str(p2[i]))
         dec[i].append(str(float(Fraction(str(p2[i])))))
 
-    return dec, rat, numberOfEq, index1, index2
+    store['decimal_output'] = dec
+    store['rational_output'] = rat
+
+    return store, index1, index2
 
 def clique_enumeration(numberOfEq, index1, index2):
+
+    assert numberOfEq == len(index1) == len(index2)
+
     # open clique enumeration input file
     fcin = open('tmp/clique_input.txt', 'w')
     # print indices to clique enumeration input file 
@@ -193,21 +218,21 @@ def clique_enumeration(numberOfEq, index1, index2):
     #############################################################
     return clique_output
 
-def print_output(nrow, ncol, m1, m2, dec, rat, clique_output):
+def print_output(store):
 
     print("%d x %d payoff matrix A:\n" % (nrow, ncol))
-    pretty_print(m1)
+    pretty_print(store['m1'])
     print()
     print("%d x %d payoff matrix B:\n" % (nrow, ncol))
-    pretty_print(m2)
+    pretty_print(store['m2'])
     print()
     print("EE = Extreme Equilibrium, EP = Expected Payoff\n")
     print("Decimal Output\n")
-    pretty_print(dec)
+    pretty_print(store['decimal_output'])
     print()
     print("Rational Output\n")
-    pretty_print(rat)
-    print(clique_output)
+    pretty_print(store['rational_output'])
+    print(store['clique_output'])
 
 def parse_input_game(fpath):
     """
@@ -256,6 +281,9 @@ if __name__ == "__main__":
                         default=choices[0],
                         help='Path to game input text file, examples: %s' % " ".join(choices))
 
+    parser.add_argument('--store_lrs_output', '-o', action='store_true',
+                        help='Store intermediate lrs output file')
+
     args = parser.parse_args()
 
     assert os.path.isfile(args.input_path), "%s is not a file" % args.input_path
@@ -263,7 +291,26 @@ if __name__ == "__main__":
     nrow, ncol, m1, m2 = parse_input_game(args.input_path)    
 
     # system call to lrsnash
-    os.system("bin/lrsnash %s >tmp/out 2> /dev/null" % args.input_path)
-    decimal_output, rational_output, numberOfEq, index1, index2 = process_lrs_output()
-    clique_output = clique_enumeration(numberOfEq, index1, index2)
-    print_output(nrow, ncol, m1, m2, decimal_output, rational_output, clique_output)
+    result = subprocess.check_output(['bin/lrsnash', args.input_path])
+    result_string = result.decode('utf-8')
+    print(result_string)
+
+    if args.store_lrs_output:
+        text_file = open("tmp/out", "w")
+        text_file.write(result_string)
+        text_file.close()
+
+    store, index1, index2 = process_lrs_output(result_string)
+    store['ncol'] = ncol
+    store['nrow'] = nrow
+    store['m1'] = m1
+    store['m2'] = m2
+    store['clique_output'] = clique_enumeration(store['number_of_extreme_eq'], index1, index2)
+
+    # print in original "banach.lse.ac.uk" format
+    print_output(store)
+    
+    # save dictionary to a yaml file
+    # TODO: tidy up contents of dictionary (e.g. strings to numbers)
+    with open('tmp/out.yaml', 'w') as outfile:
+        yaml.safe_dump(store, outfile)
