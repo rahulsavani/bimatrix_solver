@@ -274,8 +274,9 @@ def parse_input_game(fpath):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bimatrix Solver')
 
-    choices = ['ex1', '75_eq', 'rock_paper_scissors']
-    choices = [os.path.join('example_input',c + '.txt') for c in choices]
+    input_dir = os.path.join('examples','input') # assumes we run from root of rrepo
+    choices =  os.listdir(input_dir)
+    choices = [os.path.join(input_dir, c) for c in choices]
 
     parser.add_argument('--input_path', '-i',
                         default=choices[0],
