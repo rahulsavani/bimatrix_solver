@@ -1,0 +1,33 @@
+*lrsnash:lrslib v.6.2 2016.3.28(64bit,lrsgmp.h gmp v.6.1)
+2  4/5  1/5 -2 
+1  9/10  1/10  0 
+
+*Number of equilibria found: 1
+*Player 1: vertices=3 bases=3 pivots=5
+*Player 2: vertices=1 bases=1 pivots=6
+
+*lrsnash:lrslib v.6.2 2016.3.28(64bit,lrsgmp.h)
+
+2 x 2 payoff matrix A:
+
+   0  -10
+  -1   -6
+
+2 x 2 payoff matrix B:
+
+  0   10
+  0  -90
+
+EE = Extreme Equilibrium, EP = Expected Payoff
+
+Decimal Output
+
+  EE  1  P1:  (1)  0.900000  0.100000  EP=  -2.0  P2:  (1)  0.800000  0.200000  EP=  0.0
+
+Rational Output
+
+  EE  1  P1:  (1)  9/10  1/10  EP=  -2  P2:  (1)  4/5  1/5  EP=  0
+
+Connected component 1:
+{1}  x  {1}
+

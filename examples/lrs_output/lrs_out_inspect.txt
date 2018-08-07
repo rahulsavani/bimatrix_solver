@@ -1,0 +1,9 @@
+*lrsnash:lrslib v.6.2 2016.3.28(64bit,lrsgmp.h gmp v.6.1)
+2  4/5  1/5 -2 
+1  9/10  1/10  0 
+
+*Number of equilibria found: 1
+*Player 1: vertices=3 bases=3 pivots=5
+*Player 2: vertices=1 bases=1 pivots=6
+
+*lrsnash:lrslib v.6.2 2016.3.28(64bit,lrsgmp.h)
