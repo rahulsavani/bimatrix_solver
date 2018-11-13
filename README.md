@@ -46,7 +46,7 @@ Running the script
 ------------------
 
 <pre>
-python solve_game.py -i example_input/75_eq.txt
+python solve_game.py -i examples/input/75_eq.txt
 </pre>
 
 Example output
