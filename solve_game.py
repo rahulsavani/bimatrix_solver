@@ -291,8 +291,26 @@ if __name__ == "__main__":
 
     nrow, ncol, m1, m2 = parse_input_game(args.input_path)    
 
+    
+    # write the game as a *rational* matrix for use with lrs
+    import sympy as sy
+    m1_rat = sy.Matrix(m1).applyfunc(sy.Rational)
+    m2_rat = sy.Matrix(m2).applyfunc(sy.Rational)
+    newfile = os.path.join('tmp','rational_input.txt')
+    with open(newfile, 'w') as outfile:
+        outfile.write("%s %s\n\n" % (nrow,ncol))
+        tmp = m1_rat.tolist()
+        for row in tmp:
+            outfile.write(" ".join([str(t) for t in row]))
+            outfile.write("\n")
+        outfile.write("\n")
+        tmp = m2_rat.tolist()
+        for row in tmp:
+            outfile.write(" ".join([str(t) for t in row]))
+            outfile.write("\n")
+
     # system call to lrsnash
-    result = subprocess.check_output(['bin/lrsnash', args.input_path])
+    result = subprocess.check_output(['bin/lrsnash', newfile])
     result_string = result.decode('utf-8')
     print(result_string)
 
