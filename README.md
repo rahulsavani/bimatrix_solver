@@ -39,7 +39,7 @@ Sources for those are provided in this repository.
    is kept here as it includes some minor edits to allow compilation with clang
    on Mac OSX. One compiled and working, move the binary lrsnash to bin.
 
-2. complile src/coclique3.c and rename and move the created binary to
+2. complile src/coclique4.c and rename and move the created binary to
    bin/clique.
 
 Running the script
