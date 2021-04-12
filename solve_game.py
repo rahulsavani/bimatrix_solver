@@ -35,6 +35,26 @@ def pretty_print (my_matrix):
                         for e, l in zip(r, max_lens)]) for r in my_matrix]))
 
 
+def create_lrs_input_file(nrow, ncol, m1, m2):
+ 
+    # write the game as a *rational* matrix for use with lrs
+    import sympy as sy
+    m1_rat = sy.Matrix(m1).applyfunc(sy.Rational)
+    m2_rat = sy.Matrix(m2).applyfunc(sy.Rational)
+    fpath = os.path.join('tmp','rational_input.txt')
+    with open(fpath, 'w') as outfile:
+        outfile.write("%s %s\n\n" % (nrow,ncol))
+        tmp = m1_rat.tolist()
+        for row in tmp:
+            outfile.write(" ".join([str(t) for t in row]))
+            outfile.write("\n")
+        outfile.write("\n")
+        tmp = m2_rat.tolist()
+        for row in tmp:
+            outfile.write(" ".join([str(t) for t in row]))
+            outfile.write("\n")
+    
+    return fpath
 
 def process_lrs_output(string_input = None, fpath = 'tmp/out'):
     """
@@ -308,29 +328,25 @@ if __name__ == "__main__":
 
     assert os.path.isfile(args.input_path), "%s is not a file" % args.input_path
 
+    ###########################################################################
+    # Parses game, which is already in the right form for lrs input
+    # except if may contain decimals
+    ###########################################################################
     nrow, ncol, m1, m2 = parse_input_game(args.input_path)    
 
-    
-    # write the game as a *rational* matrix for use with lrs
-    import sympy as sy
-    m1_rat = sy.Matrix(m1).applyfunc(sy.Rational)
-    m2_rat = sy.Matrix(m2).applyfunc(sy.Rational)
-    newfile = os.path.join('tmp','rational_input.txt')
-    with open(newfile, 'w') as outfile:
-        outfile.write("%s %s\n\n" % (nrow,ncol))
-        tmp = m1_rat.tolist()
-        for row in tmp:
-            outfile.write(" ".join([str(t) for t in row]))
-            outfile.write("\n")
-        outfile.write("\n")
-        tmp = m2_rat.tolist()
-        for row in tmp:
-            outfile.write(" ".join([str(t) for t in row]))
-            outfile.write("\n")
+    ###########################################################################
+    # Create input file for lrsnash, using sympy to create fractional inputs
+    ###########################################################################
+    fpath = create_lrs_input_file(nrow, ncol, m1, m2)
 
-    # system call to lrsnash
-    result = subprocess.check_output(['bin/lrsnash', newfile])
+    ###########################################################################
+    # system call to lrsnas2
+    ###########################################################################
+    result = subprocess.check_output(['bin/lrsnash', fpath])
 
+    ###########################################################################
+    # print and save lrs output
+    ###########################################################################
     result_string = result.decode('utf-8')
     print(result_string)
 
@@ -339,14 +355,26 @@ if __name__ == "__main__":
         text_file.write(result_string)
         text_file.close()
 
+    ###########################################################################
+    # process lrs output
+    ###########################################################################
     store, index1, index2 = process_lrs_output(result_string)
     store['ncol'] = ncol
     store['nrow'] = nrow
     store['m1'] = m1
     store['m2'] = m2
-    store['clique_output'] = clique_enumeration(store['number_of_extreme_eq'], index1, index2)
 
+    ###########################################################################
+    # do clique enumeration
+    ###########################################################################
+    store['clique_output'] = clique_enumeration(store['number_of_extreme_eq'], 
+                                                index1, 
+                                                index2)
+
+    ###########################################################################
     # print in original "banach.lse.ac.uk" format
+    # and store to yaml
+    ###########################################################################
     print_output(store)
     
     # save dictionary to a yaml file
