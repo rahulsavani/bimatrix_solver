@@ -1,0 +1,532 @@
+.TH "LRS" "1" "2020.7.28" "July 2020" "lrs 7\&.2"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+lrs  -   Convert between representations of convex polyhedra, remove redundant inequalities, 
+convex hull computation, volume, triangulation, solution to linear programs in exact precision.
+.SH "SYNOPSIS"
+.HP \w'\fBlrs\fR\ [input-file] [output-file]\ 'u
+\fBlrs\fR\ \fI[input-file] [output-file]\fR
+.HP \w'\fBredund\fR\ [input-file] [output-file]\ 'u
+\fBredund\fR\ \fI[input-file] [output-file]\fR
+.HP \w'\fBfel\fR\    [input-file] [output-file]\ 'u
+\fBfel\fR\ \fI[input-file] [output-file]\fR
+.HP \w'\fBhvref/xref\fR\ [input-file] \ 'u
+\fBhvref/xvref\fR\ \fI[input-file]\fR 
+.SH "DESCRIPTION"
+.PP
+These programs are part of and must be compiled with
+\fIlrslib\fR which is a C library.
+All computations are done in exact arithmetic.
+.PP
+A polyhedron can be described by a list of inequalities (\fIH\-representation)\fR
+or as by a list of its vertices and extreme rays (\fIV\-representation)\fR\&.
+.PP
+\fIlrs\fR
+converts an H\-representation of a polyhedron to its V\-representation and vice versa,
+known respectively as the
+\fIvertex enumeration\fR
+and
+\fIfacet enumeration\fR problems\& (see Example (1) below).
+For V-representations the volume can be computed and a triangulation
+produced. 
+lrs can also be used to solve a linear program, remove linearities from a system,
+and extract a subset of columns.
+.PP
+\fIredund\fR
+removes redundant inequalities in an input H-representation and outputs the remaining inequalities\&. 
+For a V-representation it
+outputs all extreme points and extreme rays, often called the
+\fIconvex hull\fR problem. 
+Both outputs can be piped directly into \fIlrs\fR.
+\fIredund\fR is a link to \fIlrs\fR which performs these functions via 
+the \fBredund\fR and \fBredund_list\fR options. See Example (2) below.
+.PP
+\fIfel\fR
+projects an input H-representation onto a given set of variables using Fourier-Motzkin elimination.
+For a V-representation it extracts the specified columns.
+The output is non-redundant and can be
+can be piped directly into \fIlrs\fR.
+\fIfel\fR is a link to \fIlrs\fR which performs these functions via
+the \fBeliminate\fR and \fBproject\fR options.
+.PP
+\fIhvref/xvref\fR\ produce a cross reference list between H- and V-representations.
+See \fBUTILITIES\fR.
+.PP
+\fImplrs\fR
+is Skip Jordan's parallel wrapper based on MPI for \fIlrs/redund\fR using the same
+input and output formats. 
+See: \m[blue]\fBman mplrs \fR
+\m[]
+.PP
+Fukuda\*(Aqs
+\m[blue]\fBFAQ page\fR\m[]\&\s-2\u[1]
+contains a more detailed introduction to the problem, along with many useful tips for the new user\&.
+User's guide for \m[blue]\fBlsrslib\fR\m[]\u[8]
+
+.SH "FILE FORMATS"
+.PP
+File formats were developed jointly with Komei Fukuda and are compatible with
+\m[blue]\fBcdd/cddlib\fR\m[]\&\s-2\u[2]\d\s+2\&.
+.br
+The input for
+\fIlrs/redund\fR
+is an H\- or V\-representation of a polyhedron\&.
+
+ name
+ H-representation [\fIor\fR V-representation]
+ {options}
+ {linearities}
+ begin
+  m n rational [\fIor\fR integer]
+ {input matrix}
+ end 
+ {options}
+
+\fIname\fR
+is a user supplied name for the polyhedron\&.\ \& Comments may appear before the begin or after the end and
+should begin with a special character such as "*"\&.
+.PP
+If the representation is not specified H\-representation is assumed.
+The input coefficients are read in free format, and are not checked for type\&. Coefficients are separated by white space\&. m is the number of rows and n the number of columns of the input matrix\&.
+.SS "H\-representation"
+.PP
+m is the number of input rows, each being an inequality or equation.
+.br
+n is the number of input columns and d=n-1 is the dimension of the input. 
+.br
+An inequality or equation of the form:
+.PP
+b + a_1 x_1 + \&.\&.\&. + a_d x_d >=\ \& 0\& 
+.PP
+b + a_1 x_1 + \&.\&.\&. + a_d x_d =\ \& 0\& 
+.PP
+is input as the line:
+.PP
+b \ a_1 \&.\&.\&. a_d
+.PP
+The coefficients can be entered as integers or rationals in the format x/y\&.
+To distinguish an equation a \fBlinearity\fR option must be supplied
+before the \fBbegin\fR line (see below).
+.SS "V\-representation"
+.PP
+m is the number of input rows, each being a vertex, ray or line.
+.br
+n is the number of input columns and d=n-1 is dimension of the input. 
+.br
+Each vertex is given in the form:
+.PP
+1 \  v_1 \ \ v_1  \&.\&.\&.\ v_d
+.PP
+Each ray is given in the form:
+.PP
+0\ \&\ \& r_1 \&\ \&
+r_2\&.\&.\&.\ \&\ \& r_d
+.PP
+where 
+r_1 \ \&.\&.\&.\ \&\ \& r_d  is a point on the ray\&.
+.PP
+There must be at least one vertex in each file\&. For bounded polyhedra there will be no rays entered\&. The coefficients can be entered as integers or rationals in the format x/y\&.
+An input line can be specified as a ray and then included in the \fBlinearity\fR option (see below).
+.PP
+\fBNote for cdd users\fR:
+Note the input files for
+\fIlrs\fR
+are read in free format.
+\fIlrs\fR
+will look for exactly m*n rationals or integers separated by white space (blank, carriage return, tab etc\&.).
+\fIlrs\fR
+will not "drop" extra columns of input if n is less than the number of columns supplied\&.
+
+.SH "OPTIONS"
+.PP
+Almost all options are placed
+\fBafter\fR
+the end statement, maintaining compatibility with
+\fIcdd\fR\&. Where this is not the case, it will be mentioned explicitly\&.
+.PP
+\fBallbases\fR
+This option instructs
+\fIlrs\fR
+to list each vertex (or facet) for each of its bases\&.
+This option is often combined with printcobasis\&.
+.PP
+\fBbound\ \& x \fR
+(H\-representation only). Either the maximize or minimize option should be selected\&. x is an integer or rational\&. For maximization (resp\&. minimization) the reverse search tree is truncated\ \& whenever the current objective value is less (resp\&. more) than x\&.
+.PP
+\fBcache n\fR \ \ \ \ (default n=50)
+.br
+\fIlrs\fR
+stores the latest\ \& n dictionaries in the reverse search tree\&. This speeds up the backtracking step, but requires more memory\&.
+.PP
+\fBdebug\ \& startingcobasis endingcobasis\fR
+.br
+Print out cryptic but detailed trace, dictionaries etc\&. starting at #B=startingcobasis and ending at #B=endingcobasis\&. \fBdebug 0 0\fR gives a complete trace\&.
+.PP
+\fBdigits n\fR  (lrsmp arithmetic only - placed before the begin statement)
+.br
+n is the maximum number of decimal digits to be used\&. If this is exceeded the program terminates with a message 
+and can usually be restarted with the \fbrestart\fR option. The default is set to 100 digits\&. 
+At the end of a run a message is given informing the user of the maximum integer size encountered\&. 
+.PP
+\fBdualperturb\fR
+If lrs is executed with the \fBmaximize\fR or \fBminimize\fR option, the reverse search tree is rooted at an optimum vertex for this function\&.
+If there are multiple optimum vertices, the output will often not be complete\&. This option gives a small perturbation to the objective to avoid this\&. A warning message is given if the starting dictionary is dual degenerate\&.
+.PP
+\fBestimates k\fR
+.br
+Estimate the output size\&. Used in conjunction with \fBmaxdepth\fR.
+See: \m[blue]\fBEstimation\fR\m[]\&\s-2\u[3]\d\s+2
+.PP
+\fBeliminate  k   i_1 i_2 ... i_k  \fR          (new in v7.2)
+.br
+\fI(H-representation)\fR Eliminates k variables in an H-representation corresponding to cols i_1 .. i_k
+by projection onto the remaining variables
+using the Fourier-Motzkin method. 
+Variables are eliminated in the order given and redundancy is removed after each iteration.
+.br
+\fI(V-representation)\fR Delete the k given columns from the input matrix and remove
+redundancies (cf. \fBextract\fR where redundancies are not removed).
+.br
+Column indices are between 1 and n-1 and column zero cannot be eliminated.
+The output as a valid lrs input file. 
+See also \fBproject\fR and \fBextract\fR
+.PP
+\fBextract [ k   i_1 i_2 ... i_k ] \fR          (new in v7.1)
+.br
+\fI(H-representation)\fR A preprocessing step to remove linearities (if any) 
+in an H-representation and resize the A matrix.
+The output as a valid lrs input file. The resulting file will not contain any equations 
+but may not be full dimensional as there may be additional linearities in the 
+remaining inequalities. Options in the input file are stripped.
+The user can specify the k columns i_1 i_2 ... i_k to retain
+otherwise if k=0 the columns are considered in the order 1,2,..n-1. 
+Linear dependent columns are skipped and additional indices are taken from 1,2,...,n-1 as necessary.
+If there are no linearities in the input file the given columns are retained
+and the other ones are deleted. 
+.br
+\fI(V-representation)\fR Extract the given columns from the input file outputing a valid lrs input file.
+Options are stripped.
+.PP
+\fBgeometric\ \&\ \&\fR
+(H\-representation\ \& or voronoi option only) Each ray is printed together with the vertex with which it is incident\&. 
+.PP
+\fBincidence\fR
+This option automatically switches on \fBprintcobasis\fR. 
+For input H\-representation, indices of all input inequalities that contain the vertex/ray that is about to be output\&. 
+For input V\-representation, indices of all input vertices/rays that lie on the facet that is 
+about to be output\&. A starred index indicates that this vertex\ \& is also in the cobasis, 
+but is not contained in the facet\&. It arises due to the lifting operation used with input V\-representations\&.
+.PP
+\fBlinearity\ \& k\ \& i_1 \ i_2 \ \&... \ i_k \fR
+.br
+(H-representation) The k rows  i_1 \ i_2 \ \&... \ i_k \fR \ of the input file
+represent  equations\&. 
+(V-representation) The k rows, which should have a zero in column 1, represent lines
+in space (rather than rays).
+.PP
+\fBlponly\fR Solve the LP given by the input H-representation with objective function specified
+by the \fBmaximize\fR or \fBminimize\fR options and terminate. Use with \fBverbose\fR option
+to get dual variables. See:
+\m[blue]\fBLinear Programming\fR\m[]\&\s-2\u[4]\d\s+2
+.PP
+\fBmaxdepth k\fR
+.br
+The search will be truncated at depth k\&. All bases with depth less than or equal to k will be computed\&.\ \& k is\ \& a non\-negative integer, and this option is used for estimates \- see
+\m[blue]\fBEstimation\fR\m[]\&\s-2\u[3]\d\s+2
+\fBNote\fR: For H\-representations, rays at depth k will not be reported\&. For V\-representations, facets at depth k will not be reported\&.
+.PP
+\fBmaximize\ \&  b \ a_1 \&.\&.\&. a_{n-1} \fR\ \&
+(H\-representation\ \& only)
+.br
+\fBminimize\ \&  b \ a_1 \&.\&.\&. a_{n-1} \fR\ \&
+(H\-representation\ \& only)
+.br
+The starting vertex maximizes (or minimizes) the function
+\ b + a_1 x_1+ \&.\&.\&. + a_{n-1} x_{n-1}.
+.br
+The \fBdualperturb\fR option may be needed to avoid dual degeneracy\&. 
+.PP
+\fBmaxoutput n\fR
+.br
+Limits number of output lines produced (either vertices+rays or facets) to n
+.PP
+\fBmindepth k\fR
+.br
+Backtracking will be terminated at depth k. 
+.PP
+\fBnonnegative\fR
+(This option must come before the begin statement - H\-representation only)  \ \& Bug: Can only be used if the origin is a vertex of the polyhedron\ \&
+For problems where the input is an H\-representation of the form b+Ax>=0, x>=0 (ie\&. all variables non\-negative, all constraints inequalities) it is not necessary to give the non\-negative constraints explicitly if the nonnegative option is used\&. 
+This option cannot be used for V\-representations, or with the linearity option (in which case the linearities will be treated as inequalities)\&. This option may be used with redund , but the implied nonnegativity constraints are not tested themselves for redundancy\&. 
+.PP
+\fBproject  k   i_1 i_2 ... i_k  \fR          (new in v7.2)
+.br
+\fI(H-representation)\fR Project the polyhedron onto the k variables corresponding to cols i_1 .. i_k
+using the Fourier-Motzkin method. Column  indices are between 1 and n-1 and column
+zero is automatically retained.
+Variables not contained in the list are eliminated in increasing order 
+and redundancy is removed after each iteration.
+.br
+\fI(V-representation)\fR Extract the k given columns from the input matrix and remove
+redundancies. Column  indices are between 1 and n-1 and column
+zero is automatically extracted (cf. \fBextract\fR where redundancies are not removed).
+.br
+The output as a valid lrs input file.
+See also \fBeliminate\fR and \fBextract\fR
+.PP
+\fBprintcobasis\ k\fR
+.br
+Every k-th cobasis is printed.
+If k is omitted, the cobasis is printed for each vertex/ray/facet that is output\&. 
+For a long run it is useful to print the cobasis occasionally so that the program can be restarted if necessary\&.
+\fIH\-representation\fR: the cobasis is a list the indices of the inequalities from the 
+input file that define the current vertex or ray\&.
+For rays the cobasis is the cobasis of the vertex from which the ray emanates\&. 
+One of the indices is starred, this indicates the inequality to be dropped from the cobasis to define the ray\&. 
+If the \fBallbases\fR option is used, all cobases will be printed\&.
+\fIV\-representation\fR: the cobasis is a list of the input vertices/rays that define the current facet\&. 
+See option
+\fBincidence\fR
+for more information\&. 
+.PP
+\fBprintslack\fR
+(H\-representation only) A list of the indices of the input inequalities that are satisfied 
+strictly for the current vertex, ie\&. corresponding slack variable is positive\&. If nonnegative is set, the list will also include indices n+i for each decision variable x_i
+which is positive\&.
+.PP
+\fBredund start end \fR                      (new in v7.1)
+.br
+Check input lines with line numbers from start to end and remove any redundant lines.
+.br
+\fBredund 0 0\fR  will check all input lines.  See \m[blue]\fBredund\fR\m[]\&\s-2\u[7]\d\s+2
+.PP
+\fBredund_list k   i_1 i_2 ... i_k\fR            (new in v7.1)
+.br
+Check the k input line numbers with indices i_1 i_2 ... i_k  
+and remove any redundant lines. See \m[blue]\fBredund\fR\m[]\&\s-2\u[7]\d\s+2
+.PP
+\fBrestart\ \& V# R# B# depth {facet #s or vertex/ray #s\fR} 
+.br
+\fIlrs\fR
+can be restarted from any known cobasis\&. The calculation will proceed to normal termination\&. All of the information is contained in the output from a
+\fBprintcobasis\fR
+option\&.\ \& The
+\fBorder of the indices is very important,\fR
+enter them exactly as they appear in the output from the previously terminated run\&.
+.PP Note that if some cobasic index is followed by a "*",\ \& then the index only, without the "*", is included in the restart line\&. \fBCaution:\fR When restarting, output from the restart dictionary may be duplicated, and the final totals of number of vertices/rays/facets may reflect this\&.
+.PP
+\fBstartingcobasis i_1 \ i_2 \ ... \ i_{n-1}\fR
+.br
+lrs will start from the given cobasis which  which 
+is a list of the inequalities (for H\-representation) or vertices/rays (for V\-representation) 
+that define it. If it is invalid, or this option is not specified,
+\fIlrs\fR
+will find its own starting cobasis\&.
+.PP
+\fBtruncate\fR \ 
+The reverse search tree is truncated(pruned)\ \& whenever a new vertex is encountered\&. Note: This does note necessarily produce the set of all vertices adjacent to the optimum vertex in the polyhedron, but just a subset of them\&.
+.PP
+\fBverbose\fR
+Print slightly more detailed information about the run\&.
+.PP
+\fBvolume\fR
+(V\-representation only) 
+Compute the volume and, if the \fBverbose\fR option is also included,
+output a \fBtriangulation\fR. See 
+\m[blue]\fBVolume Computation\fR\m[]\&\s-2\u[5]\d\s+2
+.PP
+\fBvoronoi\fR
+(V\-representation\ \& only \- place immediately after end statement)  
+.br
+Compute Voronoi diagram \- see
+\m[blue]\fBVoronoi Diagrams\fR\m[]\&\s-2\u[6]\d\s+2
+.SH "ARITHMETIC"
+From version 7.1 \fIlrs/redund/mplrs\fR use hybrid arithmetic with overflow checking, 
+starting in 64bit integers, moving to 128bit (if available) and then GMP.
+Overflow checking is conservative to improve performance:
+eg. with 64 bit arithmetic, a*b triggers overflow if either a or b is at least 2^31, 
+and a+b triggers an overflow if either a or b is at least 2^62.
+Typically problems that can be solved in 64bits run 3-4 times faster than with GMP 
+and inputs solvable in 128bits run twice as fast as GMP.
+.PP
+Various arithmetic versions are available 
+and can be built from the makefile:
+.PP
+\fBlrs1\fR   Fixed length 64 bit integer arithmetic, terminates on overflow.
+.PP
+\fBlrs2\fR   Fixed length 128 bit integer arithmetic, terminates on overflow.
+.PP
+\fBlrsmp\fR  Built in extended precision integer arithmetic, uses \fBdigits\fR option above.
+.PP
+\fBlrsgmp\fR  GNU MP which must be installed first from https://gmplib.org/.
+.PP
+\fBlrsflint\fR  FLINT hybrid arithmetic which must be installed first from
+http://www.flintlib.org/  
+
+.SH "EXAMPLES"
+.PP
+(1) Convert the H-representation of a cube given cube by 6 the six inequalities 
+.br
+-1 <= x_i <= 1 , i=1,2,3 into its V-representation consisting of 8 vertices.
+.PP
+ % cat cube.ine
+ cube.ine
+ H-representation
+ begin
+ 6 4 rational
+ 1  1  0  0
+ 1  0  1  0
+ 1  0  0  1
+ 1 -1  0  0
+ 1  0  0 -1
+ 1  0 -1  0
+ end
+
+ % lrs cube.ine
+
+ *lrs:lrslib v.6.3 2018.4.11(64bit,lrslong.h,overflow checking)
+ *Input taken from file cube.ine
+ cube.ine
+ V-representation
+ begin
+ ***** 4 rational
+ 1  1  1  1
+ 1 -1  1  1
+ 1  1 -1  1
+ 1 -1 -1  1
+ 1  1  1 -1
+ 1 -1  1 -1
+ 1  1 -1 -1
+ 1 -1 -1 -1
+ end
+ *Totals: vertices=8 rays=0 bases=8 integer_vertices=8
+.PP
+(2) Compute the extreme points of a set of 10 points in R^3
+.PP
+ % cat c.ext
+ V-representation
+ begin
+ 10 4 rational
+ 1  1  1  1 
+ 1  0  1  1 
+ 1 1/2 0 1/3
+ 1  1  1  0 
+ 1  0  1  0 
+ 1  1  0  0 
+ 1  0  0  0 
+ 1  0 1/3 1/4
+ 1  1  0  1 
+ 1  0  0  1 
+ end
+
+ % redund c.ext
+
+ *redund:lrslib v.7.2 2020.6.8(64bit,lrslong.h,hybrid arithmetic)
+ *Input taken from  c.ext
+ V-representation
+ begin
+ 8 4 rational
+ 1  1  1  1 
+ 1  0  1  1 
+ 1  1  1  0 
+ 1  0  1  0 
+ 1  1  0  0 
+ 1  0  0  0 
+ 1  1  0  1 
+ 1  0  0  1 
+ end
+ *Input had 10 rows and 4 columns
+ * 2 redundant row(s) found:
+ 3 8
+
+.SH "UTILITIES"
+.PP
+\fBhvref/xref\fR   Cross reference listing between V- and H-representations  (new in v7.1)
+
+In the example below we start from an H-representation of cube.ine but the same
+steps apply to the V-representation cube.ext.
+It is recommended to first remove any redundancies from the input file using redund.
+
+1. Add  \fBprintcobasis\fR and \fBincidence\fR options to cube.ine
+
+% lrs cube.ine cube.ext   
+.br
+% xref cube.ext
+
+2. Edit the output file  cube.ext.x to insert a second line that contains two integers
+
+rows maxindex
+
+where rows >= # output lines in cube.ext.x
+      maxindex >= # input lines in cube.ine
+
+or just use 0 0 and run hvref, the output will tell you which values to use.
+
+% hvref cube.ext.x
+
+
+.SH "NOTES"
+.IP " 1." 4
+FAQ page
+.RS 4
+\%https://inf.ethz.ch/personal/fukudak/polyfaq/polyfaq.html
+.RE
+.IP " 2." 4
+cdd
+.RS 4
+\%https://inf.ethz.ch/personal/fukudak/cdd_home/
+.RE
+.IP " 3." 4
+Estimation.
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html#Estimation
+.RE
+.IP " 4." 4
+Linear Programming
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html#Linear%20Programming
+.RE
+.IP " 5." 4
+Volume Computation.
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html#Volume%20Computation
+.RE
+.IP "6." 4
+Voronoi Diagrams.
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html#Voronoi%20Diagrams
+.RE
+.IP "7." 4
+redund: extreme point enumeration and eliminating redundant inequalities
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html#redund
+.RE
+.IP "8." 4
+User's guide for lrslib
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html
+.RE
+.SH AUTHOR
+David Avis <avis at cs dot mcgill dot ca >
+.SH "SEE ALSO"
+.BR mplrs (1),
+.BR lrslib (1),
+.BR lrsnash (1)

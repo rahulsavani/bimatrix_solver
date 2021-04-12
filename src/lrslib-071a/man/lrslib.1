@@ -1,0 +1,100 @@
+'\" t
+.\"     Title: LRSLIB
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 06/10/2020
+.\"    Manual: lrslib 0.42b
+.\"    Source: July 2009(rev. June 2020)
+.\"  Language: English
+.\"
+.TH "LRSLIB" "1" "2020.06.10" "July 2009" "lrslib 7\&.1"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+lrslib: Convert between representations of convex polyhedra, remove redundant inequalities, 
+convex hull computation, solve linear programs in exact precision, 
+compute Nash-equibria in 2-person games\&.
+.SH "SYNOPSIS"
+.HP \w'\fBlrs\fR\ [input-file] [output-file]\ 'u
+\fBlrs\fR\ \fI[input-file] [output-file]\fR
+.HP \w'\fBredund\fR\ [input-file] [output-file]\ 'u
+\fBredund\fR\ \fI[input-file] [output-file]\fR
+.HP \w'\fBmpirun\fR -np \fInum_proc\fR \fBmplrs\fR\ \fIinput-file [output-file] [options...]\fR\ 'u
+\fBmpirun\fR -np \fInum-proc\fR \fBmplrs\fR\ \fIinput-file [output-file] [options]\fR
+.HP \w'\fBlrsnash\fR\ [input-file] \ 'u
+\fBlrsnash\fR\ \fI[options] [input-file] \fR 
+.HP \w'\fBhvref/xref\fR\ [input-file] \ 'u
+\fBhvref/xvref\fR\ \fI[input-file]\fR 
+.SH "DESCRIPTION"
+.PP
+A polyhedron can be described by a list of inequalities (\fIH\-representation)\fR
+or as by a list of its vertices and extreme rays (\fIV\-representation)\fR\&.
+\fIlrslib\fR is a C library containing programs to manipulate these representations.
+All computations are done in exact arithmetic.
+.PP
+\fIlrs\fR
+converts an H\-representation of a polyhedron to its V\-representation and vice versa,
+known respectively as the
+\fIvertex enumeration\fR
+and
+\fIfacet enumeration\fR problems\& (see Example (1) below).
+lrs can also be used to solve a linear program, remove linearities from a system,
+and extract a subset of columns.
+.PP
+\fIredund\fR
+removes redundant inequalities in an input H-representation and outputs the remaining inequalities\&. 
+For a V-representation input it
+outputs all extreme points and extreme rays. Both outputs can be piped directly into \fIlrs\fR.
+\fIredund\fR is a link to \fIlrs\fR which performs these functions via 
+the \fBredund\fR and \fBredund_list\fR options.
+.PP
+\fImplrs\fR
+is Skip Jordan's parallel wrapper for \fIlrs/redund\fR. 
+.PP
+\fIlrsnash\fR
+is Terje Lensberg's application of \fIlrs\fR for finding Nash-equilibria
+in 2-person games\&. 
+.PP
+\fIhvref/xvref\fR\ produce a cross reference list between H- and V-representations.
+.SH "ARITHMETIC"
+From version 7.1 \fIlrs/redund/mplrs\fR use hybrid arithmetic with overflow checking, 
+starting in 64bit integers, moving to 128bit (if available) and then GMP.
+Overflow checking is conservative to improve performance:
+eg. with 64 bit arithmetic, a*b triggers overflow if either a or b is at least 2^31, 
+and a+b triggers an overflow if either a or b is at least 2^62.
+Typically problems that can be solved in 64bits run 3-4 times faster than with GMP 
+and inputs solvable in 128bits run twice as fast as GMP.
+.PP
+Various arithmetic versions are available 
+and can be built from the makefile:
+
+.SH "NOTES"
+.PP 
+User's guide for lrslib
+.RS 4
+\%http://cgm.cs.mcgill.ca/~avis/C/lrslib/USERGUIDE.html
+.RE
+.SH AUTHOR
+David Avis <avis at cs dot mcgill dot ca >
+.SH "SEE ALSO"
+.BR lrs (1),
+.BR mplrs (1),
+.BR lrsnash (1),
+

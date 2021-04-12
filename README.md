@@ -34,10 +34,8 @@ Installation
 The script solve_game.py uses two binaries that you should compile yourself.
 Sources for those are provided in this repository.
 
-1. create a binary lrsnash using the sources in src/lrslib-062. Newer versions 
-   may be available from http://cgm.cs.mcgill.ca/~avis/C/lrs.html; this version
-   is kept here as it includes some minor edits to allow compilation with clang
-   on Mac OSX. One compiled and working, move the binary lrsnash to bin.
+1. create a binary lrsnash using the sources in src/lrslib-071a. 
+   Newer versions may be available from http://cgm.cs.mcgill.ca/~avis/C/lrs.html.
 
 2. complile src/coclique4.c and rename and move the created binary to
    bin/clique.

@@ -1,3 +1,15 @@
+"""
+Author: Rahul Savani
+
+Note: 
+
+This is old and badly written code; one day I might clean it up. For now I just
+do minor tweaks to get it working again when it breaks.
+
+It has been tested with lrs 071a
+
+"""
+
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
@@ -53,7 +65,12 @@ def process_lrs_output(string_input = None, fpath = 'tmp/out'):
     # Number of extreme equilibria
     ######################################################
     # changed with use of lrsnash to i-5
-    numberOfEq = int(x[i-5][4])
+
+    # lrsnash 062
+    # numberOfEq = int(x[i-5][4])
+
+    # Extra final row in lrsnash 071 compared to 062
+    numberOfEq = int(x[i-6][4])
 
     store['number_of_extreme_eq'] = numberOfEq
 
@@ -271,12 +288,14 @@ def parse_input_game(fpath):
 
     return nrow, ncol, m1, m2
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bimatrix Solver')
 
     input_dir = os.path.join('examples','input') # assumes we run from root of rrepo
     choices =  os.listdir(input_dir)
     choices = [os.path.join(input_dir, c) for c in choices]
+
 
     parser.add_argument('--input_path', '-i',
                         default=choices[0],
@@ -311,6 +330,7 @@ if __name__ == "__main__":
 
     # system call to lrsnash
     result = subprocess.check_output(['bin/lrsnash', newfile])
+
     result_string = result.decode('utf-8')
     print(result_string)
 

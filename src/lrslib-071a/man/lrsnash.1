@@ -1,0 +1,147 @@
+.TH "LRSNASH" "1" "2020.7.28" "July 2020" "lrslib 7\&.2"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie (.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+lrsnash: \  
+Compute Nash-equibria in 2-person games\&.
+.SH "SYNOPSIS"
+.HP \w'\fBlrsnash\fR \ [options...] [input-file] \ 'u
+\fBlrsnash\fR \ [options...] [input-file] 
+.HP \w'\fBlrsnash1\fR\ [options...] [input-file] \ 'u
+\fBlrsnash1\fR\ [options...] [input-file] 
+.HP \w'\fBlrsnash2\fR\ [options...] [input-file] \ 'u
+\fBlrsnash2\fR\ [options...] [input-file] 
+.HP \w'\fBnashdemo\fR\ \ 'u
+\fBnashdemo\fR\  
+.PP
+options:
+    -v, --verbose         Prints a trace of the solution process
+    -d, --debug           Dumps lots of information for debugging
+    -p, --printgame       Prints the payoff matrix for the game
+    -s, --standard        Promise that input files have standard structure
+    -o, --outfile <file>  Send output to <file>
+    -h, --help            Prints this text
+     Short options can be grouped, as in '-ps' and '-do out.txt'
+
+
+.SH DESCRIPTION
+.PP
+These C programs are distributed as part of the \m[blue]\fBlsrslib\fR\m[]\u[2] package
+and must be compiled with it.
+
+Alice has a payoff matrix A and Bob has a playoff matrix B, both of dimension m by n.
+Alice assigns probabilities x to the rows and Bob y to the columns.
+Alice receives payoff x^T A y and Bob receives x^T B y.
+A Nash equilibriam 
+occurs for pairs x,y for which neither player can improve their expected payoff
+by unilateraly changing strategies.
+
+.PP
+\fIlrsnash\fR
+is an application of \fIlrs\fR for finding Nash-equilibria
+in 2-person matrix games
+using a method described in \u[1]. It uses GMP exact extended precision arithmetic.
+
+\fIlrsnash1\fR
+is the same as \fIlrsnash\fR
+except that it uses 64 bit exact arithmetic and terminates if overflow is detected.
+It is about 3-4 times faster.
+
+\fIlrsnash2\fR
+is the same as \fIlrsnash\fR
+except that it uses 128 bit exact arithmetic and terminates if overflow is detected.
+It is about twice as fast. It requires a C
+compiler with __int128 support (eg. gcc v. 4.6.0 or later).
+
+\fInashdemo\fR
+is a simple template for \fIlrsnash\fR.
+It builds two 3x4 matrices A and B and computes their equilibria.
+
+The running time may be significantly different depending on the order of the
+two matrices in the input. For large problems it may be advantageous to
+run \fIlrsnash\fR twice in parallel with the matrices
+in different orders.
+There is also a more complex legacy input format recognized by
+\fIlrsnash\fR that is described in \u[1].
+
+.SH FILE FORMATS
+.PP
+The input file consists of two integers m and n on line 1
+followed by two mxn payoff matrices A and B:
+
+ m n                                            
+ A          (row by row)                    
+ B          (row by row)      
+
+.SH EXAMPLE
+The input file game  has two 3x2 payoff matrices:
+
+ %cat game
+
+ 3 2
+ 
+ 0 6
+ 2 5
+ 3 3
+ 
+ 1 0
+ 0 2
+ 4 3
+
+ % lrsnash game
+ 
+ 2  1/3  2/3  4 
+ 1  2/3  1/3  0  2/3 
+ 
+ 2  2/3  1/3  3 
+ 1  0  1/3  2/3  8/3 
+ 
+ 2  1  0  3 
+ 1  0  0  1  4 
+ 
+ *Number of equilibria found: 3
+ *Player 1: vertices=5 bases=5 pivots=8
+ *Player 2: vertices=3 bases=1 pivots=8
+
+\fBInterpretation\fR
+There are 3 Nash equilibria. For the first one:
+
+ 2  1/3  2/3  4    
+.br
+Bob(player 2) plays column 1 and 2 with probablilities y=(1/3, 2/3) 
+and the payoff to Alice(player 1) is 4.
+
+ 1  2/3  1/3  0  2/3
+.br
+Alice plays rows 1,2,3 with probabilities x=(2/3, 1/3, 0) and the payoff to Bob is 2/3.
+
+.SH NOTES
+.IP 1. 4
+D. Avis, G. Rosenberg, R. Savani, B. von Stengel, \fIEnumeration of Nash Equilibria for Two-Player Games\fR,
+Economic Theory 42(2009) 9-37
+.IP 2. 4
+User's guide for lrslib
+.RS 4
+\%http://cgm.cs.mcgill.ca/%7Eavis/C/lrslib/USERGUIDE.html
+.RE
+.SH AUTHORS
+David Avis and Terje Lensberg
+.SH "SEE ALSO"
+.BR lrslib (1)

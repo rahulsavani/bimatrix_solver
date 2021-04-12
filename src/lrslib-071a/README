@@ -1,0 +1,535 @@
+README file for lrslib : reverse search vertex enumeration program/CH package
+-----------------------------------------------------------------------------
+Documentation is currently being maintained at the URL:
+
+http://cgm.cs.mcgill.ca/~avis/C/lrs.html
+-----------------------------------------------------------------------------
+
+Version 7.1 
+manual: http://cgm.cs.mcgill.ca/~avis/C/lrslib/USERGUIDE71.html
+
+2020.10.17
+
+Memory leak in countonly option fixed for mplrs/lrs.
+
+2020.5.25
+Version 7.1 is a major revision completing the move to an all C library begun
+in 7.0 which was work in progress and has been removed from distribution.
+
+Major changes to lrs:
+1. redund function is now performed by lrs via options, but legacy redund maintained
+2. extract option to extract columns from the input especially with linearities
+3. hvref makes a cross reference list between H and V representations
+
+Major changes to mplrs:
+1. Temporary files no longer used for communicating with workers.
+2. Parallel version of redund is now available
+
+Thanks to David Bremner and Jerry James for advice, patches and other help!
+
+Details below
+
+2020.5.19
+
+redund binaries are no longer produced and lrs does redund
+functioning via the redund option. For a standard redund run (ie all lines checked)
+set up a link:
+%ln -s lrs redund    and if needed %ln -s lrs1 redund1 etc. for single arithmetic
+Now no options are needed and
+
+% redund filename
+
+will remove all redundant inequalities
+
+In mplrs this can be achieved by:
+
+% mpirun -np <procs> mplrs -redund filename
+
+2020.4.27
+
+Changes in mplrs relative to 7.0:
+ 1. All C++ code removed or rewritten in C; C++ compiler no longer required.
+ 2. mplrs uses the new lrslib API (2019.11.8) instead of temporary files for
+    parallel jobs.
+ 3. Support for parallel redund runs using the redund option in input files.
+ 4. Compiler warnings removed.
+ 5. Additional warning and informational messages printed when relevant.
+ 6. New option -redund, for redund runs without adding option to file.
+ 7. Avoid duplicate output lines that were possible on an overflow in
+    hybrid mode.
+ 8. Fix a rare bug that could omit output lines at the start of a run.
+
+2020.2.5
+The extract option is a preprocessing step to remove linearities (if any) and resize
+the A matrix using standard lrs processing, which is output as a valid lrs input file. 
+The resulting file will not contain any equations but may not be full dimensional.
+Options in the input file are stripped.
+User can specify the cols to retain (where this possible by linear independence).
+If there are no linearities in the input file the columns in the option are retained
+and the other ones are deleted. This is useful for projecting a V-representation.
+
+extract 0
+
+retains columns in order 1,2,...,n
+
+extract k   i1 .. ik
+
+retains columns in order i1,...,ik then the missing 1..n as necessary
+Column 0 is always retained.
+
+Use redund to remove redundancies from the output as necessary.
+A full lrs run is not performed, however output can be piped:
+
+% lrs file | redund | lrs
+
+2019.12.30
+
+hvref makes a cross reference list between H and V reps
+Usage  (same for ext file):
+
+Add  printcobasis and incidence options to cube.ine
+
+% lrs cube.ine cube.ext
+% xref cube.ext
+
+Edit the output file  cube.ext.x so that the second line contains two integers
+
+rows maxindex
+
+where rows >= # output lines in cube.ext.x
+      maxindex >= # input lines in cube.ine
+
+or just use 0 0 and the program will tell you which values to use
+
+% hvref cube.ext.x
+
+
+2019.11.8
+
+New redund option causes lrs to perform redund function:
+
+redund start end
+
+limits redundancy checking to input rows numbered start,...,end.
+Defaults  start=1 and end=m  is legacy redund and can be obtained by
+
+redund 0 0
+
+lrs_main has been rewritten as lrsv2_main to avoid temporary files in mplrs.
+It now passes pointers to P and Q back to mplrs and is called 3 times 
+according to the stage flag.
+
+stage=0  performs problem setup and reads the input file
+stage=1  performs reverse search or redund function
+stage=2  performs clean up and closes files
+
+2019.6.13
+
+If lrs is compiled with -DLRS_QUIET lrs produces an ouput file with only the data
+between the begin and end lines, ie. a matrix of the V or H representation.
+The only exception is if the input is a V-rep and output has linearities
+in which case line one has the linearity information
+
+--------------------------------------------------------------------------------------
+2019.1.5
+Various pivot rules are implemented for solving LPs using variations of the lponly option.
+To get pivot counts correct it is best to use lrsgmp at least for now
+
+lponly    default, currently Dantzig's rule
+lponly_b  Bland's rule, which is used for vertex enumeration
+lponly_d  Dantzig's rule, the only rule used up to Version 7.1           
+lponly_r  random edge rule
+lponly_rd alernates random edege and Dantzig
+
+-----------------------------------------------------------------------------
+
+2018.7.1  
+Version 7.0   (lrslib-070)
+
+User's guide: http://cgm.cs.mcgill.ca/~avis/C/lrslib/USERGUIDE70.html
+
+Recommended makes:
+%make            # lrs,redund(hybrid arithmetic), lrsgmp, redundgmp
+%make mplrs      # mplrs(hybrid arithmetic), mplrsgmp
+
+1. hybrid (64bit/128bit/GMP) arithmetic implemented:
+   speedups of roughly 3-5 times (64bit) and 2 times(128bit) over GMP for problems using small integers. 
+2. overflow checking for 64/128 bit arithmetic
+3. __int128 (gcc v.4.6.0 or later) and FLINT arithmetic now supported
+4. lrsgmp, mplrsgmp uses only GMP arithmetic, same as lrslib-062
+5. lrs/redund/mplrs start in 64 bit moving to 128 bit and then to gmp arithmetic as necessary
+6. single arithmetic versions of lrs/mplrs available for comparison purposes
+7. single arithmetic versions of lrsnash are available with overflow checking
+8. plrs is no longer supported
+9. removing the -DSAFE option disables overflow checking in 64/128 bit mode and results are unpredicable if overflow occurs
+10. mplrs now prints maximum tree depth at end and supports printcobasis option in input files
+
+Shared library:
+
+To make just the shared library, and appropriate symlinks,
+
+% make liblrs.o
+
+This is a *multiarithmatic* library that contains the lrslib API
+suffixed with _1, _2, and _gmp. To use as a replacement for the old liblrsgmp.so, use
+
+CFLAGS+= "-DGMP -DMA"
+
+The -DMA is new, and enables rewriting of your existing function call
+lrs_foo(...) to lrs_foo_gmp(...). This is C preprocessor macros, and
+is optional, you can also call the _1, _2, and _gmp versions
+directly.
+
+-----------------------------------------------------------------------------
+2016.5.27
+
+Several changes to mplrs:
+ 1. New command-line options -countonly, -stopafter <n>, -maxbuf <n>.  
+ 2. Volume output.
+ 3. Counting statistics on number of jobs, size of L, number of times
+    empty changed to longs.
+ 4. Performance improvements for problems with large outputs.
+ 
+-----------------------------------------------------------------------------
+2016.3.28
+
+Changed default to 64-bit arithmetic when using lrslong and lrsmp arithmetic. 
+For 32bit machines a -DB32 compile flag is now required for make allmp and
+for compiles of lrs1/mplrs1/plrs1.
+
+-----------------------------------------------------------------------------
+2016.1.18
+
+countonly     option follows the end line and suppresses output of vertices/rays/facets
+
+2015.11.20    Current version is lrslib-061      Version 6.1
+
+1. Contains lrsnash.c and lrsnashlib.c replacing nash.c with a library version and simpler interface
+that does not require setupnash. Big thanks to Terje Lensberg for this.
+nashdemo.c is a very basic template for setting up games and calling the library function lrs_solve_nash(game *g).
+
+To compile:
+
+% make lrsnash
+
+you get binaries lrsnash and nashdemo.
+
+% nashdemo                     just runs the demo, no parameters
+
+% lrsnash game                 finds the equlibrium for game, which is in setupnash format (recommended!)
+
+% lrsnash game1 game2          finds the equilibrium for the same game in legacy nash format
+
+The usersguide will be updated in due course
+
+2. mplrs, plrs, lrs had some memory leaks and a few other issues that are fixed in this release (hopefully and thankfully)
+
+--------------------------------------------------------------------------------
+
+
+2015.10.10
+memory leak in nash fixed
+2015.10.3
+OpenMPI has memory leaks in version 1.8.6. We tested mplrs with version 1.10.0
+and found no leaks.
+2015.9.16
+Bug in nash caused by duplicated rows and columns fixed
+2015.9.14
+Fixed some lrs memory leaks caused by nonnegative and linearity output  
+
+2015.7.13
+This a major revision of lrslib which contains mplrs.c, the MPI parallel version of lrs written by Skip Jordan and derived from plrs which was written by Gary Roumanis.
+Tests of mplrs on Tsubame2 with up to 1200 cores by Kazuki Yoshizoe show near linear speedups. lrs has some new options which are primarily for use by mplrs.
+
+To install mplrs see:  http://cgm.cs.mcgill.ca/~avis/C/lrslib/USERGUIDE.html#mplrs
+
+You will need an MPI library and mpic++ installed.
+If you feel lucky try:
+
+% make mplrs
+
+Defalut usage:
+
+% mpirun -np p mplrs  <infile> [ <outfile> ] 
+
+where p>3 is the number of core to be used.
+
+If you use openmpi the hosts available and slots on each host may be in
+/usr/local/etc/openmpi-default-hostfile
+
+Other options available are described in http://cgm.cs.mcgill.ca/~avis/C/lrslib/USERGUIDE.html#mplrs
+
+
+In particular plots can be made during the mplrs run of the job queue length, number of processors active etc.
+
+The makefile was modified by David Bremner. Please direct any complaints to bremner@unb.ca
+
+New option:
+maxcobases n 
+After maxbases have been generated the cobases of the unexplored subtrees are reported.
+Each of these can be restarted as a separate lrs run with suitable mindepth option set
+
+------------------------------------------------------------------------------
+Older versions
+
+2014.12.4
+
+With gcc 4.8 plrs does not compile. Changed memory ordering (plrs.cpp line 168) from
+plrs_output* consume_list = output_list.exchange(0,boost::memory_order_consume);
+to
+plrs_output* consume_list = output_list.exchange(0,boost::memory_order_acquire);
+
+For more details see here:
+https://bitsharestalk.org/index.php?topic=15.msg14109#msg14109
+
+To get plrsmp to compile I converted the length macro to a function call (conflict with str1.length in lrslib.c line 2792)
+
+2014.12.2
+
+From version 1.56.0 the boost library contains the Atomic library, so boost_atomic is no longer included in the lrs distribution. 
+The instructions below for installing plrs are now simpler.
+-----------------------------------------------------------------------------
+
+2014.9.27
+
+lrslib-050 released 
+
+lrslib-050 contains a multi-thread version of lrs called plrs. The input/output files for plrs are the
+same as for lrs, however plrs is intended just for vertex or facet enumeration, and other functionality
+of lrs is not available. 
+
+Usage is 
+
+% plrs  <infile> [ <outfile> ] [ -mt <max threads> ] [ -id <initial depth> ]
+
+-mt <max threads> specifies the number parallel threads calling lrs (default 12)
+-id <initial depth> specifies the initial depth of the RS tree to generate before parallelization (default 5)
+
+Setup instructions for plrs. Use version 1.57.0 or later of the boost libary
+
+1. Install boost library from http://www.boost.org/ into prefix/boost157
+
+If you have root permission, prefix=/usr/include  (or just do not specify it)
+However you can install boost locally wherever you like.
+ 
+Instructions for installing the library are located here 
+http://www.boost.org/doc/libs/1_57_0/more/getting_started/unix-variants.html. 
+Look at section 5 for an easy install. 
+***Important: make a note of the path given at the end of the install process ****
+
+2. Update the makefile to include the paths you recorded in step 1. 
+ "make plrs" will make plrs with the gmp library (assuming the gmp library is already installed on that machine). 
+ "make plrsmp" will make plrs with the standard lrsmp arithmetic library and plrs1 with the long integer library. 
+
+-------------------------------------------------------------------------------
+2013.5.22  modification to printcobasis so that the objective value is printed
+------------------------------------------------------------------------------
+2012.9.27  initial release of multithread version of lrs called plrs that uses a wrapper
+           written by Gary Roumanis. It needs the Boost libraries at http://www.boost.org
+
+           plrs setup instructions are in the file readme_plrs
+           I regret that I cannot give any additional support for the correct installation of boost libraries.
+
+           Note: makefile has now changed so that
+          make all              gives gmp arithmetic library
+          make allmp            uses native mp arithmetic if gmp not available
+-----------------------------------------------------------------------------
+2010.5.7  incidence no longer resets printcobasis frequency to zero. 
+          If the printcobasis n option is used, the frequency will be n.
+          Otherwise the default n=0 is used, and cobasis is printed only for lexmin bases.
+-----------------------------------------------------------------------------
+
+2010.4.26 bug when incidence and nonnegative options used together reported by 
+          Jochen Koenemannkfix was fixed. 
+          Bug in fourier reported by Laszlo David for input which is not full
+          dimensional. I am temporarily removing fourier from distribution.
+-----------------------------------------------------------------------------
+2009.12.2 bug fix for redund caused problems in nash, reported by James Heather.
+          Hopefully this new version solves both issues.
+-----------------------------------------------------------------------------
+2009.9.10  bug in redund reported by Alden Walker, when linearities are redundant, has been fixed.
+           It is now under test, so please report any bugs!
+           this bug also can cause printcobasis option to be incorrect for lrs under this condition. 
+           Problems still seem to arise in fourier from time to time, so please report any anomalities.
+-----------------------------------------------------------------------------
+2009.2.5    bug in fourier when using linearity option pointed out by Conor Meagher.  Option disabled.
+            2nash driver uses two processors to run nash with input files in both orders.
+            terminates when first process terminates. Thanks again to Conor for this.
+-----------------------------------------------------------------------------
+2007.6.6    printcobasis output line modified to give also in_det
+            det= the determinant of the current basis, which is always integer.
+            in_det= the determinant of the input rows corresponding to the current basis. lrs rescales input rows if they are rational or have a common divisor, so in these cases det and in_det are different.
+For V-representation, the volume will be the sum of the in_det of
+each basis, divided by the dimension (n-1)!
+-------------------------------------------------------------------
+2006.10.31   Modified code for restartpivots, to allow DB to do something.
+             Estimator now provides estimate of running time=time*bases/tree nodes
+             Triangulation printed if getvolume and verbose options used
+-----------------------------------------------------------------------------
+
+2006.10.11   Bug fix for nash, and inclusion of polytope version
+-----------------------------------------------------------------------------
+
+             available by using setupnash2
+-----------------------------------------------------------------------------
+2006.3.1 incidence option now can be used compatibly with printcobasis n 
+-----------------------------------------------------------------------------
+2006.2.14
+Version 4.2b
+
+Bug fixed related to memory allocation for linearity reported by David Haws.
+If you use the linearity option, you should upgrade to this version.
+
+In the case of inconsistent linearities, the first inconsistent linearity
+is now reported before termination.
+
+----------------------------------------------------------------------------
+2005.11.20
+Version 4.2a
+
+Bug fixed relating to miscaled lp dual variables output when lponly set
+
+maxoutput n   Option limits output lines to n: either rays+vertices, or facets
+
+----------------------------------------------------------------------------
+
+2005.6.1
+Version 4.2 with two new drivers:
+
+nash.c  which computes all Nash equilibria of a two person non-cooperative game,
+        and uses setupnash.c to create the input files.
+
+fourier.c  which does Fourier elimination on an H-representation to project it to
+           a lower dimensional space. Contributed by Tallman Nkgau.
+
+Other changes: lrs with the lponly option now provides dual variables for the 
+        optimum solution.
+
+Bug fix to mpdouble (reported by several users.)
+
+_____________________________________________________________________________
+
+2004.9.23
+Version 4.2 updated with a patch from Bremner that has something to do with C++.
+
+2003.10.24
+
+Version 4.2 which appears here is a prerelease version, is not fully tested,
+and will be modified frequently. However you are more than welcome to try
+it - please report any bugs! Merci beaucoup.
+
+2002.10.28
+
+lrslib v.4.2        minor modifications to v.4.1
+
+This is a pre-release for test purposes. Please report bugs!
+Nonnegative option was fixed to allow input where origin is not necessarily
+a vertex.
+A memory leak was fixed.
+A quiet mode is added - compile with LRS_QUIET set.
+
+------------------------------------------------------------------------------
+2001.6.20
+
+lrslib v.4.1
+
+lpsolve like procedures to build input data added. Demo programs are:
+
+vedemo.c    vertex enumeration
+chdemo.c    facet enumeration
+lpdemo.c    linear programs
+
+They can be build using: make demo
+
+Proper garbage collection implemented to clean up after each problem has been
+solved. See
+
+http://cgm.cs.mcgill.ca/~avis/C/lrslib/lrslib.html 
+
+for documentation.
+
+-------------------------------------------------------------------------------
+2000.6.14
+
+Various binaries are available in the directory binaries.
+
+Currently available:
+
+binaries/debian        Debian Linux      
+binaries/sun           Sun Ultra Sparc
+binaries/win98         Windows 95/98
+
+------------------------------------------------------------------------------
+2000.6.14
+
+lrslib v.4.0 which
+supercedes all previous versions of the programs lrs and redund.
+New Features:
+------------
+
+1. Library version allows customization of the search function, access to the
+output as it is produced, and access to lrs from other programs.
+
+2. Problems need no longer be in full dimension. This allows the
+input of equations, partial enumeration on facets, ridges etc.
+
+3. Choice of arithmetic packages. Currently available are:
+
+   lrsmp     Extended precision arithmetic used in previous releases
+  
+   lrslong   Fixed length long integer arithmetic. No overflow checking
+             but 5-10 times faster.
+
+   lrsgmp    Requires preinstallation of GNU GMP package, available at
+             http://www.swox.com/gmp/
+
+  The standard "make all" gives lrs/redund with lrsmp, and lrs1/redund1 with lrslong. 
+ 
+4. redund was completely rewritten and is faster than before. The previous
+   version did not remove redundancy in the starting basis and should be
+   discarded. 
+
+
+Installation:
+------------
+
+1. From website go to "Download" and retrieve the file lrslib-040.tar.gz
+
+2. Unpack with:
+
+   % gunzip lrslib-040.tar.gz
+   % tar xvf lrslib-040.tar
+
+3. Go to the new directory
+
+   % cd lrslib-040
+
+4. make binaries by typing
+   
+   % make all               (most 32 bit unix machines)
+
+or
+
+  % make all64              (64 bit integer machines such as DEC Alpha)
+
+If the make fails, it is usually due to timing and/or interrupt handling
+routines. In this case try:
+
+  % make nosigs
+
+5. If successful you should get binaries: lrs redund lrs1 redund1
+
+6. Test the program lrs by typing:
+
+   lrs cube.ine
+
+and you should get output resembling the file cube.ext
+
+7. You will find additional test files in the directories: ine and ext
+
+8. For GNU gmp library, edit the makefile to set the INCLUDE and LIB paths for
+   the location of the gmp libarary, and type:
+
+   %make gmp
+
+   You should get binaries glrs and gredund

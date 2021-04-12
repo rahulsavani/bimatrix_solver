@@ -1,0 +1,8 @@
+#!/bin/csh
+#produce a nice listing of "incidence"
+#add  printcobasis and incidence options to end of input file
+# % lrs input output
+# % xref output
+
+grep represent $1 >! $1.x
+perl -nle 'print $1 if /s (.+?)I/' $1 |sed 's/ ://'|sed 's/[^ ]*\* //' | sed 's/$/   #/'| nl >> $1.x

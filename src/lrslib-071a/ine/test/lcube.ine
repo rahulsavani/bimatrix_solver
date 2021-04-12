@@ -1,0 +1,10 @@
+cube.ine
+H-representation
+begin
+5 6 rational
+ 1 1  1  0  0 1
+ 1 0  0  1  0 0
+ 1 0  0  0  1 0
+ 1 -1 -1  0  0 -1
+ 1 0  0  0 -1 0
+end

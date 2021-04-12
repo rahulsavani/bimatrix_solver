@@ -1,0 +1,13 @@
+*non_par with linearity given as two inequalities
+*either redund option deletes the given inequality
+*both cannot be simultaneously deleted
+H-representation
+begin
+4 3 integer
+0 -1 1
+0 1 -1
+
+0 1 0
+0 0 1
+end
+redund 1 4

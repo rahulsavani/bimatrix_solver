@@ -1,3 +1,225 @@
 
 Connected component 1:
-{1, 2, 3}  x  {1}
+{1}  x  {1}
+
+Connected component 2:
+{2}  x  {2}
+
+Connected component 3:
+{3}  x  {3}
+
+Connected component 4:
+{4}  x  {4}
+
+Connected component 5:
+{5}  x  {5}
+
+Connected component 6:
+{6}  x  {6}
+
+Connected component 7:
+{7}  x  {7}
+
+Connected component 8:
+{8}  x  {8}
+
+Connected component 9:
+{9}  x  {9}
+
+Connected component 10:
+{10}  x  {10}
+
+Connected component 11:
+{11}  x  {11}
+
+Connected component 12:
+{12}  x  {12}
+
+Connected component 13:
+{13}  x  {13}
+
+Connected component 14:
+{14}  x  {14}
+
+Connected component 15:
+{15}  x  {15}
+
+Connected component 16:
+{16}  x  {16}
+
+Connected component 17:
+{17}  x  {17}
+
+Connected component 18:
+{18}  x  {18}
+
+Connected component 19:
+{19}  x  {19}
+
+Connected component 20:
+{20}  x  {20}
+
+Connected component 21:
+{21}  x  {21}
+
+Connected component 22:
+{22}  x  {22}
+
+Connected component 23:
+{23}  x  {23}
+
+Connected component 24:
+{24}  x  {24}
+
+Connected component 25:
+{25}  x  {25}
+
+Connected component 26:
+{26}  x  {26}
+
+Connected component 27:
+{27}  x  {27}
+
+Connected component 28:
+{28}  x  {28}
+
+Connected component 29:
+{29}  x  {29}
+
+Connected component 30:
+{30}  x  {30}
+
+Connected component 31:
+{31}  x  {31}
+
+Connected component 32:
+{32}  x  {32}
+
+Connected component 33:
+{33}  x  {33}
+
+Connected component 34:
+{34}  x  {34}
+
+Connected component 35:
+{35}  x  {35}
+
+Connected component 36:
+{36}  x  {36}
+
+Connected component 37:
+{37}  x  {37}
+
+Connected component 38:
+{38}  x  {38}
+
+Connected component 39:
+{39}  x  {39}
+
+Connected component 40:
+{40}  x  {40}
+
+Connected component 41:
+{41}  x  {41}
+
+Connected component 42:
+{42}  x  {42}
+
+Connected component 43:
+{43}  x  {43}
+
+Connected component 44:
+{44}  x  {44}
+
+Connected component 45:
+{45}  x  {45}
+
+Connected component 46:
+{46}  x  {46}
+
+Connected component 47:
+{47}  x  {47}
+
+Connected component 48:
+{48}  x  {48}
+
+Connected component 49:
+{49}  x  {49}
+
+Connected component 50:
+{50}  x  {50}
+
+Connected component 51:
+{51}  x  {51}
+
+Connected component 52:
+{52}  x  {52}
+
+Connected component 53:
+{53}  x  {53}
+
+Connected component 54:
+{54}  x  {54}
+
+Connected component 55:
+{55}  x  {55}
+
+Connected component 56:
+{56}  x  {56}
+
+Connected component 57:
+{57}  x  {57}
+
+Connected component 58:
+{58}  x  {58}
+
+Connected component 59:
+{59}  x  {59}
+
+Connected component 60:
+{60}  x  {60}
+
+Connected component 61:
+{61}  x  {61}
+
+Connected component 62:
+{62}  x  {62}
+
+Connected component 63:
+{63}  x  {63}
+
+Connected component 64:
+{64}  x  {64}
+
+Connected component 65:
+{65}  x  {65}
+
+Connected component 66:
+{66}  x  {66}
+
+Connected component 67:
+{67}  x  {67}
+
+Connected component 68:
+{68}  x  {68}
+
+Connected component 69:
+{69}  x  {69}
+
+Connected component 70:
+{70}  x  {70}
+
+Connected component 71:
+{71}  x  {71}
+
+Connected component 72:
+{72}  x  {72}
+
+Connected component 73:
+{73}  x  {73}
+
+Connected component 74:
+{74}  x  {74}
+
+Connected component 75:
+{75}  x  {75}

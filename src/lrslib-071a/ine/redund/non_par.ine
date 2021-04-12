@@ -1,0 +1,9 @@
+H-representation
+linearity 1 1
+begin
+3 3 integer
+0 1 -1
+0 1 0
+0 0 1
+end
+redund 2 3
