@@ -18,7 +18,8 @@ from fractions import Fraction
 import string 
 import argparse 
 import subprocess
-import StringIO
+# import StringIO
+from io import StringIO
 import yaml
 
 def pretty_print (my_matrix):
@@ -68,7 +69,8 @@ def process_lrs_output(string_input = None, fpath = 'tmp/out'):
 
     if string_input is not None:
         # string_input takes precedence
-        buf = StringIO.StringIO(string_input)
+        # buf = StringIO.StringIO(string_input)
+        buf = StringIO(string_input)
     else: 
         # read from fpath
         buf = open(fpath, 'r')
