@@ -118,18 +118,8 @@ def process_lrs_output(string_input = None, fpath = 'tmp/out'):
 
     count = 0 # how many equilibria of II to match with one
 
-    # first line of out with a vertex (counting from 1 as used in range)
+    # first line of out which may be a vertex (counting from 1 as used in range)
     first_line = 2
-
-    # deal with follwing possible, dodgy lrs output (lrslib-062) for 3rd line, like
-    # *Input linearity in row 3 is redundant--skipped2  0  1/2  1/2  0  1
-    # which results in an x[3] like
-    # ['*Input', 'linearity', 'in', 'row', '3', 'is', 'redundant--skipped2', '0', '1/2', '1/2', '0', '1']
-    # Note that there should be a new line after skipped, in which case the fix would be cleaner
-
-    if x[first_line+1][0] == "*Input":
-        del x[3][0:6]
-        x[3][0] = x[3][0].replace('redundant--skipped','')
 
     for j in range(first_line,len(x)-5):
 
@@ -143,6 +133,8 @@ def process_lrs_output(string_input = None, fpath = 'tmp/out'):
         elif x[j][0] == "1": 
             processII = False
         else:
+            # here we skip lines like e.g.,
+            # *Input linearity in row 16 is redundant--skipped
             print("skipping line: %s", x[j])
             continue
 
